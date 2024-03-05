@@ -20,25 +20,16 @@ router.get("/comics", async (req, res) => {
 // post /comics
 router.post("/comics", async (req, res) => {
     const collection = getCollection();
-    const {series, issue, format, hasRead} = req.body;
-    const newComic = await collection.insertOne({series, issue, format, hasRead});
-
-    if(!series){
-        return res.status(400).json({msg: "Error: Missing Data"})
-    }else if(!issue){
-        return res.status(400).json({msg: "Error: Missing Data"})
-    }else if(!format){
-        return res.status(400).json({msg: "Error: Missing Data"})
-    }else if(!hasRead){
-        return res.status(400).json({msg: "Error: Missing Data"})
+    let { series, issue, format, hasRead } = req.body;
+  
+    if (!series || !issue || !format || typeof hasRead !== "boolean") {
+      return res.status(400).json({ msg: "Error: Missing or invalid data" });
     }
-
-    if(typeof hasRead !== "boolean"){
-        return res.status(400).json({msg: "invalid status"});
-    }
-
-    res.status(200).json({series, issue, format, hasRead, _id: newComic.insertedId });
-})
+  
+    const newComic = await collection.insertOne({ series, issue, format, hasRead });
+  
+    res.status(200).json({ series, issue, format, hasRead, _id: newComic.insertedId });
+  });
 // delete /comics/:id
 router.delete("/comics/:id", async (req, res) => {
     const collection = getCollection();
@@ -48,26 +39,16 @@ router.delete("/comics/:id", async (req, res) => {
     res.status(200).json(deletedComic);
 })
 //put /comics/:id
-router.put("/comics/:id", async (req, res) => {
+router.patch("/comics/:id", async (req, res) => {
     const collection = getCollection();
     const _id = new ObjectId(req.params.id);
-    const {series, issue, format, hasRead} = req.body
+    const { hasRead } = req.body
 
-    if(!series){
-        return res.status(400).json({msg: "Error: Missing Data"})
-    }else if(!issue){
-        return res.status(400).json({msg: "Error: Missing Data"})
-    }else if(!format){
-        return res.status(400).json({msg: "Error: Missing Data"})
-    }else if(!hasRead){
-        return res.status(400).json({msg: "Error: Missing Data"})
+    if(hasRead === undefined || typeof hasRead !== "boolean"){
+        return res.status(400).json({msg: "Invalid 'hasRead"});
     }
 
-    if(typeof hasRead !== "boolean"){
-        return res.status(400).json({msg: "invalid status"});
-    }
-
-    const updatedComic = await collection.updateOne({_id}, {$set: {series, issue, format, hasRead}})
+    const updatedComic = await collection.updateOne({_id}, {$set: { hasRead }})
 
     res.status(200).json(updatedComic);
 })
