@@ -1,23 +1,47 @@
 const express = require("express");
-
 const router = express.Router();
+const { getConnectedClient } = require("./database");
+const { ObjectId } = require("mongodb"); 
 
+const getCollection = () => {
+    const client = getConnectedClient();
+    const collection = client.db("comicbookcollectionsdb").collection("comics");
+    return collection;
+}
 
 // get /comics
-router.get("/comics", (req, res) => {
-    res.status(200).json({ msg: "GET REQUEST TO /api/comics" });
+router.get("/comics", async (req, res) => {
+    const collection = getCollection();
+    const comics = await collection.find({}).toArray();
+
+
+    res.status(200).json(comics);
 })
 // post /comics
-router.post("/comics", (req, res) => {
-    res.status(200).json({ msg: "POST REQUEST TO /api/comics" });
+router.post("/comics", async (req, res) => {
+    const collection = getCollection();
+    const {series, issue, format, hasRead} = req.body;
+    const newComic = await collection.insertOne({series, issue, format, hasRead});
+
+    res.status(200).json({series, issue, format, hasRead, _id: newComic.insertedId });
 })
 // delete /comics/:id
-router.delete("/comics:id", (req, res) => {
-    res.status(200).json({ msg: "DELETE REQUEST TO /api/comics:id" });
+router.delete("/comics/:id", async (req, res) => {
+    const collection = getCollection();
+    const _id = new ObjectId(req.params.id);
+    
+    const deletedComic = await collection.deleteOne({ _id });
+    res.status(200).json(deletedComic);
 })
 //put /comics/:id
-router.put("/comics:id", (req, res) => {
-    res.status(200).json({ msg: "PUT REQUEST TO /api/comics:id" });
+router.put("/comics/:id", async (req, res) => {
+    const collection = getCollection();
+    const _id = new ObjectId(req.params.id);
+    const {series, issue, format, hasRead} = req.body
+
+    const updatedComic = await collection.updateOne({_id}, {$set: {series, issue, format, hasRead}})
+
+    res.status(200).json(updatedComic);
 })
 
 module.exports = router;
