@@ -40,17 +40,32 @@ router.delete("/comics/:id", async (req, res) => {
 })
 //put /comics/:id
 router.patch("/comics/:id", async (req, res) => {
-    const collection = getCollection();
-    const _id = new ObjectId(req.params.id);
-    const { hasRead } = req.body
+    console.log("PATCH request received");
+  
+    try {
+      console.log("Before updateOne operation");
+  
+      const collection = getCollection(); // Add this line to get the collection
+  
+      const _id = new ObjectId(req.params.id);
+      const { hasRead } = req.body;
+  
+      const result = await collection.updateOne({ _id }, { $set: { hasRead } });
+  
+      console.log("After updateOne operation");
+  
+      if (result.matchedCount === 1 && result.modifiedCount === 1) {
+        // Successful update
+        res.status(200).json({ msg: "Comic updated successfully" });
 
-    if(hasRead === undefined || typeof hasRead !== "boolean"){
-        return res.status(400).json({msg: "Invalid 'hasRead"});
+      } else {
+        // Update didn't occur, comic not found, or other issues
+        res.status(404).json({ msg: "Comic not found or update unsuccessful" });
+      }
+    } catch (error) {
+      console.error("Error updating comic:", error);
+      res.status(500).json({ msg: "Internal Server Error" });
     }
-
-    const updatedComic = await collection.updateOne({_id}, {$set: { hasRead }})
-
-    res.status(200).json(updatedComic);
-})
+  });
 
 module.exports = router;
