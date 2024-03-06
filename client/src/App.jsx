@@ -41,6 +41,27 @@ export default function App() {
     setComics([...comics, newComic]);
   }
 
+  const updateComic = async (comicId, comicHasRead) => {
+    try {
+      console.log("Updating comic with ID:", comicId);
+  
+      const res = await fetch(`/api/comics/${comicId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ hasRead: !comicHasRead }), // Invert the value here
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+  
+      // ... rest of the code
+    } catch (error) {
+      console.error("Error updating comic:", error);
+    }
+  };
+  
+  
+  
+
   return (
       <main className="container">
         <h1 className="title">Comic Book Collection</h1>
@@ -79,7 +100,7 @@ export default function App() {
             <p>Format: {comic.format}</p>
             <p>Has Read: {(comic.hasRead) ? "True": "False"}</p>
             <div>
-              <button>
+              <button onClick={() => updateComic(comic._id, comic.hasRead)}>
                 Toggle Read
               </button>
             </div>

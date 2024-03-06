@@ -45,22 +45,23 @@ router.patch("/comics/:id", async (req, res) => {
     try {
       console.log("Before updateOne operation");
   
-      const collection = getCollection(); // Add this line to get the collection
+      const collection = getCollection();
   
       const _id = new ObjectId(req.params.id);
       const { hasRead } = req.body;
   
-      const result = await collection.updateOne({ _id }, { $set: { hasRead } });
+      const result = await collection.findOneAndUpdate(
+        { _id },
+        { $set: { hasRead } },
+        { returnDocument: 'after' } // Return the updated document
+      );
   
       console.log("After updateOne operation");
-  
-      if (result.matchedCount === 1 && result.modifiedCount === 1) {
+      console.log(result);
+      if (result._id) {
         // Successful update
-        res.status(200).json({ msg: "Comic updated successfully" });
+        res.status(200).json(result.hasRead);
 
-      } else {
-        // Update didn't occur, comic not found, or other issues
-        res.status(404).json({ msg: "Comic not found or update unsuccessful" });
       }
     } catch (error) {
       console.error("Error updating comic:", error);
