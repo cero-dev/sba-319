@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { getConnectedClient } = require("./database");
 const { ObjectId } = require("mongodb"); 
+const comicBookCollection =  require("./comicbookcollectionsdb.js");
 
 const getCollection = () => {
     const client = getConnectedClient();
@@ -17,6 +18,16 @@ router.get("/comics", async (req, res) => {
 
     res.status(200).json(comics);
 })
+
+
+router.get("/seed", async (req, res) => {
+  const client = getConnectedClient();
+  const collection = client.db("comicbookcollectionsdb").collection("comics");
+  const newComicCollection = await collection.insertMany(comicBookCollection)
+  res.status(200).json(newComicCollection);
+})
+
+
 // post /comics
 router.post("/comics", async (req, res) => {
     const collection = getCollection();
@@ -55,9 +66,7 @@ router.patch("/comics/:id", async (req, res) => {
         { $set: { hasRead } },
         { returnDocument: 'after' } // Return the updated document
       );
-  
-      console.log("After updateOne operation");
-      console.log(result);
+      
       if (result._id) {
         // Successful update
         res.status(200).json(result.hasRead);

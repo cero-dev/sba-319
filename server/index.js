@@ -20,7 +20,7 @@ async function startServer() {
     await connectToMongoDB();
 
     app.listen(port, () => {
-        console.log(`Server is listening on http://localhost:${port}`);
+        console.log(`Server is liSAstening on http://localhost:${port}`);
     });
 }
 
